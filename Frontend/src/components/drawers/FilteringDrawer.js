@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Drawer,
@@ -7,66 +7,43 @@ import {
   Divider,
   IconButton,
   TextField,
-  MenuItem,
+  Autocomplete,
+  Chip,
   Slider,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import SyncIcon from "@mui/icons-material/Sync"; 
+import SyncIcon from "@mui/icons-material/Sync";
+import dayjs from "dayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { SingleInputDateRangePicker } from "@mui/x-date-pickers-pro/DateRangePicker";
+import { DateRangePicker } from "@mui/x-date-pickers-pro"; // Use the existing DateRangePicker
+
+const Base_url = process.env.REACT_APP_BACKEND_URL;
 
 const filterConfig = [
-  {
-    name: "name",
-    label: "Name",
-    type: "text",
-    placeholder: "Enter name",
-  },
-  {
-    name: "category",
-    label: "Category",
-    type: "select",
-    options: [
-      { value: "option1", label: "Option 1" },
-      { value: "option2", label: "Option 2" },
-    ],
-  },
-  {
-    name: "subcategory",
-    label: "Subcategory",
-    type: "select",
-    options: [
-      { value: "sub1", label: "Subcategory 1" },
-      { value: "sub2", label: "Subcategory 2" },
-    ],
-  },
-  {
-    name: "createdAt",
-    label: "Created At",
-    type: "text",
-    placeholder: "05-Feb-10 to 28-Feb-24",
-  },
-  {
-    name: "updatedAt",
-    label: "Updated At",
-    type: "text",
-    placeholder: "05-Feb-10 to 28-Feb-24",
-  },
-  {
-    name: "price",
-    label: "Price",
-    type: "range",
-    placeholder: "Enter price",
-  },
-  {
-    name: "saleprice",
-    label: "Sale Price",
-    type: "range",
-    placeholder: "Enter price",
-  },
+  { name: "name", label: "Name", type: "text", placeholder: "Enter name" },
+  { name: "category", label: "Category", type: "multi-select" },
+  { name: "subcategory", label: "Subcategory", type: "multi-select" },
+  { name: "createdAt", label: "Created At", type: "date" },
+  { name: "updatedAt", label: "Updated At", type: "date" },
+  { name: "price", label: "Price", type: "range" },
+  { name: "saleprice", label: "Sale Price", type: "range" },
 ];
 
 const FilteringDrawer = ({ open, toggleDrawer, onApplyFilters }) => {
+  const [filters, setFilters] = useState({
+    name: "",
+    category: [],
+    subcategory: [],
+    createdAt: [null, null],
+    updatedAt: [null, null],
+    price: [11, 100],
+    saleprice: [11, 100],
+  });
 
-  const [filters, setFilters] = useState({ name: "", category: "", subcategory: "", createdAt: "", updatedAt: "", price: "", saleprice: "" });
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [subcategoryOptions, setSubcategoryOptions] = useState([]);
 
   const handleFilterChange = (field) => (e) => {
     setFilters({ ...filters, [field]: e.target.value });
@@ -76,120 +53,213 @@ const FilteringDrawer = ({ open, toggleDrawer, onApplyFilters }) => {
     setFilters({ ...filters, [field]: newValue });
   };
 
+  const handleCategoryChange = (event, value) => {
+    setFilters({ ...filters, category: value });
+  };
+
+  const handleSubcategoryChange = (event, value) => {
+    setFilters({ ...filters, subcategory: value });
+  };
+
+  const handleDateRangeChange = (newValue) => {
+    setFilters({ ...filters, createdAt: newValue });
+  };
+
   const resetField = (field) => {
-    setFilters({
-      ...filters,
-      [field]: filterConfig.find((f) => f.name === field).type === "range"
-        ? [11, 100]
-        : "",
-    });
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [field]:
+        filterConfig.find((f) => f.name === field).type === "range"
+          ? [11, 100]
+          : filterConfig.find((f) => f.name === field).type === "date"
+          ? [null, null]
+          : "",
+    }));
   };
 
   const clearFilters = () => {
-    setFilters(filters);
+    setFilters({
+      name: "",
+      category: [],
+      subcategory: [],
+      createdAt: [null, null],
+      updatedAt: [null, null],
+      price: [11, 100],
+      saleprice: [11, 100],
+    });
   };
 
   const handleApplyFilters = () => {
     onApplyFilters(filters);
   };
 
-  return (
-    <Drawer anchor="right" open={open} onClose={toggleDrawer}>
-      <Box
-        sx={{
-          width: 370,
-          px: 5,
-          py: 2,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-          <Typography variant="h6">Filters</Typography>
-          <IconButton onClick={toggleDrawer}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch(`${Base_url}/alldata`);
+        const data = await res.json();
+        const categories = [...new Set(data.data.map((item) => item.category))];
+        const subcategories = [
+          ...new Set(data.data.map((item) => item.subcategory)),
+        ];
+        setCategoryOptions(categories);
+        setSubcategoryOptions(subcategories);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
 
-        {filterConfig.map((filter) => (
-          <Box
-            key={filter.name}
-            sx={{ border: "1px solid lightgray", borderRadius: "5px", p: 1, mb: 2 }}
-          >
+    fetchData();
+  }, []);
+
+  return (
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <Drawer anchor="right" open={open} onClose={toggleDrawer}>
+        <Box
+          sx={{
+            width: 370,
+            px: 5,
+            py: 2,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+            <Typography variant="h6">Filters</Typography>
+            <IconButton onClick={toggleDrawer}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {filterConfig.map((filter) => (
             <Box
+              key={filter.name}
               sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                px: 1,
-                alignItems: "center",
+                border: "1px solid lightgray",
+                borderRadius: "5px",
+                p: 1,
+                mb: 2,
               }}
             >
-              <label style={{ flex: 1 }}>{filter.label}</label>
-              <IconButton onClick={() => resetField(filter.name)} sx={{ ml: 1 }}>
-                <SyncIcon />
-              </IconButton>
-            </Box>
-
-            {filter.type === "select" ? (
-              <TextField
-                select
-                fullWidth
-                sx={{ ml: "10px", width: "80%" }}
-                value={filters[filter.name]}
-                onChange={handleFilterChange(filter.name)}
-                variant="outlined"
-                size="small"
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  px: 1,
+                  alignItems: "center",
+                }}
               >
-                <MenuItem value="">{`Select ${filter.label.toLowerCase()}`}</MenuItem>
-                {filter.options.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            ) : filter.type === "range" ? (
-              <Slider
-                sx={{ ml: "18px", mt: "30px", width: "80%" }}
-                value={filters[filter.name]}
-                onChange={handleRangeChange(filter.name)}
-                valueLabelDisplay="auto"
-                min={11}
-                max={100}
-              />
-            ) : (
-              <TextField
-                sx={{ ml: "9px", width: "80%" }}
-                value={filters[filter.name]}
-                onChange={handleFilterChange(filter.name)}
-                variant="outlined"
-                placeholder={filter.placeholder || `Enter ${filter.label.toLowerCase()}`}
-                size="small"
-              />
-            )}
-          </Box>
-        ))}
+                <label style={{ flex: 1 }}>{filter.label}</label>
+                <IconButton
+                  onClick={() => resetField(filter.name)}
+                  sx={{ ml: 1 }}
+                >
+                  <SyncIcon />
+                </IconButton>
+              </Box>
 
-        <Divider sx={{ my: 2 }} />
+              {filter.type === "multi-select" ? (
+                <Autocomplete
+                  multiple
+                  options={
+                    filter.name === "category"
+                      ? categoryOptions
+                      : subcategoryOptions
+                  }
+                  value={filters[filter.name]}
+                  onChange={
+                    filter.name === "category"
+                      ? handleCategoryChange
+                      : handleSubcategoryChange
+                  }
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip
+                        key={option}
+                        label={option}
+                        {...getTagProps({ index })}
+                      />
+                    ))
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="outlined"
+                      placeholder={`Select ${filter.label.toLowerCase()}`}
+                      size="small"
+                      sx={{ ml: "10px", width: "80%" }}
+                    />
+                  )}
+                />
+              ) : filter.type === "range" ? (
+                <Slider
+                  sx={{ ml: "18px", mt: "30px", width: "80%" }}
+                  value={filters[filter.name]}
+                  onChange={handleRangeChange(filter.name)}
+                  valueLabelDisplay="auto"
+                  min={11}
+                  max={100}
+                />
+              ) : filter.type === "date" ? (
+                <DateRangePicker
+                  startText="Start Date"
+                  endText="End Date"
+                  value={filters.createdAt}
+                  onChange={handleDateRangeChange}
+                  renderInput={(startProps, endProps) => (
+                    <>
+                      <TextField
+                        {...startProps}
+                        variant="outlined"
+                        size="small"
+                        sx={{ width: "80%", ml: "10px" }}
+                      />
+                      <TextField
+                        {...endProps}
+                        variant="outlined"
+                        size="small"
+                        sx={{ width: "80%", ml: "10px" }}
+                      />
+                    </>
+                  )}
+                />
+              ) : (
+                <TextField
+                  sx={{ ml: "9px", width: "80%" }}
+                  value={filters[filter.name]}
+                  onChange={handleFilterChange(filter.name)}
+                  variant="outlined"
+                  placeholder={
+                    filter.placeholder || `Enter ${filter.label.toLowerCase()}`
+                  }
+                  size="small"
+                />
+              )}
+            </Box>
+          ))}
 
-        <Button
-          variant="outlined"
-          fullWidth
-          sx={{ mb: 2, height: "50px" }}
-          onClick={clearFilters}
-        >
-          Clear Filters
-        </Button>
+          <Divider sx={{ my: 2 }} />
 
-        <Button
-          variant="contained"
-          sx={{ height: "50px" }}
-          fullWidth
-          onClick={handleApplyFilters}
-        >
-          Apply Filters
-        </Button>
-      </Box>
-    </Drawer>
+          <Button
+            variant="outlined"
+            fullWidth
+            sx={{ mb: 2, height: "50px" }}
+            onClick={clearFilters}
+          >
+            Clear Filters
+          </Button>
+
+          <Button
+            variant="contained"
+            sx={{ height: "50px" }}
+            fullWidth
+            onClick={handleApplyFilters}
+          >
+            Apply Filters
+          </Button>
+        </Box>
+      </Drawer>
+    </LocalizationProvider>
   );
 };
 

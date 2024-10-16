@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -33,15 +33,18 @@ const columns = [
   { accessorKey: "createdAt", header: "Created At" },
   { accessorKey: "updatedAt", header: "Updated At" },
   { accessorKey: "price", header: "Price" },
-  { accessorKey: "salePrice", header: "Sale Price" },
+  {
+    accessorKey: "sale_price",
+    header: "Sale Price",
+    cell: ({ row }) => row.original.sale_price ?? "N/A", 
+  },
 ];
 
 const StyledSwapVertIcon = styled(SwapVertIcon)(({ active }) => ({
   color: active ? "#1976d2" : "gray",
 }));
 
-const CustomTable = () => {
-  const [globalFilter, setGlobalFilter] = useState("");
+const CustomTable = ({ search }) => {
   const [sorting, setSorting] = useState([]);
   const [fetchedData, setFetchedData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -52,7 +55,7 @@ const CustomTable = () => {
   const table = useReactTable({
     data: fetchedData,
     columns,
-    state: { globalFilter, sorting },
+    state: { search, sorting },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -60,10 +63,14 @@ const CustomTable = () => {
     onSortingChange: setSorting,
   });
 
-  const getData = async (page = 0, limit = 10) => {
+  const getData = async (page = 0, limit = 10, search = "") => {
     setLoading(true);
     try {
-      const res = await fetch(`${Base_url}?page=${page + 1}&limit=${limit}`);
+      const res = await fetch(
+        `${Base_url}/data?page=${
+          page + 1
+        }&limit=${limit}&search=${encodeURIComponent(search)}`
+      );
       if (!res.ok) {
         throw new Error("Network response was not ok");
       }
@@ -78,8 +85,8 @@ const CustomTable = () => {
   };
 
   useEffect(() => {
-    getData(pageIndex, pageSize);
-  }, [pageIndex, pageSize]);
+    getData(pageIndex, pageSize, search);
+  }, [pageIndex, pageSize, search]);
 
   return (
     <Box sx={{ paddingLeft: "10px", paddingRight: "10px", paddingTop: "10px" }}>
@@ -87,8 +94,8 @@ const CustomTable = () => {
         <Table stickyHeader aria-label="sortable table">
           <TableHead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+              <TableRow key={headerGroup?.id}>
+                {headerGroup?.headers?.map((header) => (
                   <TableCell
                     key={header.id}
                     sx={{
@@ -99,22 +106,34 @@ const CustomTable = () => {
                       position: "sticky",
                       top: 0,
                       zIndex: 1,
-                      textAlign: "center", 
+                      textAlign: "center",
                     }}
                   >
                     {header.column.getCanSort() ? (
                       <TableSortLabel
-                        active={!!header.column.getIsSorted()}
-                        direction={header.column.getIsSorted() === "desc" ? "desc" : "asc"}
+                        active={!!header?.column?.getIsSorted()}
+                        direction={
+                          header?.column?.getIsSorted() === "desc"
+                            ? "desc"
+                            : "asc"
+                        }
                         onClick={header.column.getToggleSortingHandler()}
                         IconComponent={() => (
-                          <StyledSwapVertIcon active={!!header.column.getIsSorted()} />
+                          <StyledSwapVertIcon
+                            active={!!header?.column?.getIsSorted()}
+                          />
                         )}
                       >
-                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {flexRender(
+                          header?.column?.columnDef?.header,
+                          header?.getContext()
+                        )}
                       </TableSortLabel>
                     ) : (
-                      flexRender(header.column.columnDef.header, header.getContext())
+                      flexRender(
+                        header?.column?.columnDef?.header,
+                        header?.getContext()
+                      )
                     )}
                   </TableCell>
                 ))}
@@ -124,8 +143,18 @@ const CustomTable = () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} sx={{ textAlign: "center" }}>
-                  <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "200px" }}>
+                <TableCell
+                  colSpan={columns.length}
+                  sx={{ textAlign: "center" }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      height: "200px",
+                    }}
+                  >
                     <CircularProgress />
                   </Box>
                 </TableCell>
@@ -145,7 +174,10 @@ const CustomTable = () => {
                         textAlign: "center",
                       }}
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>

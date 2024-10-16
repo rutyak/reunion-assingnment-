@@ -10,8 +10,7 @@ import SortingDrawer from "./drawers/SortingDrawer";
 import FilteringDrawer from "./drawers/FilteringDrawer";
 import GroupingDrawer from "./drawers/GroupingDrawer";
 
-const Navbar = () => {
-  const [search, setSearch] = useState("");
+const Navbar = ({ setSearch, search }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerType, setDrawerType] = useState("");
 
