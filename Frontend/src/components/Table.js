@@ -17,13 +17,14 @@ import {
   Box,
   TableSortLabel,
   Paper,
-  Typography,
+  CircularProgress,
 } from "@mui/material";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
 import { styled } from "@mui/system";
-import CustomPagination from "./CustomPagination"; 
+import CustomPagination from "./CustomPagination";
 
-// Columns Definition
+const Base_url = process.env.REACT_APP_BACKEND_URL;
+
 const columns = [
   { accessorKey: "id", header: "ID" },
   { accessorKey: "name", header: "Name" },
@@ -35,7 +36,6 @@ const columns = [
   { accessorKey: "salePrice", header: "Sale Price" },
 ];
 
-// Custom styled icon for sorting
 const StyledSwapVertIcon = styled(SwapVertIcon)(({ active }) => ({
   color: active ? "#1976d2" : "gray",
 }));
@@ -44,9 +44,10 @@ const CustomTable = () => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState([]);
   const [fetchedData, setFetchedData] = useState([]);
-  const [totalCount, setTotalCount] = useState(0); // To store total count of records
-  const [pageIndex, setPageIndex] = useState(0); // Current page index
-  const [pageSize, setPageSize] = useState(10); // Records per page
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [loading, setLoading] = useState(false);
 
   const table = useReactTable({
     data: fetchedData,
@@ -60,47 +61,29 @@ const CustomTable = () => {
   });
 
   const getData = async (page = 0, limit = 10) => {
+    setLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/fetch/data?page=${page + 1}&limit=${limit}`);
+      const res = await fetch(`${Base_url}?page=${page + 1}&limit=${limit}`);
       if (!res.ok) {
         throw new Error("Network response was not ok");
       }
       const data = await res.json();
-      setFetchedData(data.data); // Assuming your API returns data in the format { data: [...], total: ... }
-      setTotalCount(data.total); // Set total count of records from response
+      setFetchedData(data.data);
+      setTotalCount(data.total);
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    getData(pageIndex, pageSize); // Fetch data whenever pageIndex or pageSize changes
+    getData(pageIndex, pageSize);
   }, [pageIndex, pageSize]);
 
   return (
-    <Box sx={{ paddingLeft: "20px", paddingRight: "20px", paddingTop: "20px" }}>
-      <Typography
-        variant="h6"
-        sx={{
-          mb: 3,
-          textAlign: "center",
-          fontWeight: "bold",
-          color: "#333",
-          textTransform: "uppercase",
-          letterSpacing: "1.2px",
-        }}
-      >
-        Product List
-      </Typography>
-
-      <TableContainer
-        component={Paper}
-        sx={{
-          borderRadius: "10px",
-          boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.1)",
-          maxHeight: "500px",
-        }}
-      >
+    <Box sx={{ paddingLeft: "10px", paddingRight: "10px", paddingTop: "10px" }}>
+      <TableContainer component={Paper}>
         <Table stickyHeader aria-label="sortable table">
           <TableHead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -116,7 +99,7 @@ const CustomTable = () => {
                       position: "sticky",
                       top: 0,
                       zIndex: 1,
-                      textAlign: "center",
+                      textAlign: "center", 
                     }}
                   >
                     {header.column.getCanSort() ? (
@@ -139,33 +122,47 @@ const CustomTable = () => {
             ))}
           </TableHead>
           <TableBody>
-            {table.getRowModel().rows.map((row, index) => (
-              <TableRow
-                key={row.id}
-                sx={{
-                  backgroundColor: index % 2 === 0 ? "#fafafa" : "#f1f1f1", // Zebra striping
-                  "&:hover": { backgroundColor: "#e3f2fd" }, // Row hover effect
-                }}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    sx={{
-                      padding: "10px",
-                      borderBottom: "1px solid #e0e0e0",
-                      textAlign: cell.column.id === "price" || cell.column.id === "salePrice" ? "right" : "left", 
-                    }}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} sx={{ textAlign: "center" }}>
+                  <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "200px" }}>
+                    <CircularProgress />
+                  </Box>
+                </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  sx={{ "&:hover": { backgroundColor: "#e3f2fd" } }}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      sx={{
+                        padding: "10px",
+                        borderBottom: "1px solid #e0e0e0",
+                        textAlign: "center",
+                      }}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
 
-      <Box sx={{ mt: 2 }}>
+      <Box
+        sx={{
+          position: "fixed",
+          bottom: "100px",
+          left: "50%",
+          transform: "translateX(-50%)",
+        }}
+      >
         <CustomPagination
           pageIndex={pageIndex}
           pageSize={pageSize}

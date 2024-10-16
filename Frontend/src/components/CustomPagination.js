@@ -6,21 +6,17 @@ const CustomPagination = ({
   pageSize,
   totalCount,
   onPageChange,
-  onRowsPerPageChange,
 }) => {
   const totalPages = Math.ceil(totalCount / pageSize);
 
-  // Function to calculate the page range to display
   const getDisplayedPages = () => {
     const pages = [];
 
     if (totalPages <= 5) {
-      // If there are 5 or fewer pages, show them all
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Show first 2 pages, last 2 pages, and some in the middle with ellipsis
       if (pageIndex <= 2) {
         pages.push(1, 2, 3, "...", totalPages);
       } else if (pageIndex >= totalPages - 3) {
@@ -40,8 +36,6 @@ const CustomPagination = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        mt: 2,
-        mb: 2,
       }}
     >
       <Button

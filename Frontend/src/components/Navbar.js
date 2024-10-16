@@ -5,15 +5,30 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import LayersIcon from "@mui/icons-material/Layers";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
+import ShowHideColumnDrawer from "./drawers/ShowHideColumnDrawer";
+import SortingDrawer from "./drawers/SortingDrawer";
+import FilteringDrawer from "./drawers/FilteringDrawer";
+import GroupingDrawer from "./drawers/GroupingDrawer";
 
 const Navbar = () => {
-  const [globalFilter, setGlobalFilter] = useState("");
-  const [filter, setFilter] = useState("");
+  const [search, setSearch] = useState("");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerType, setDrawerType] = useState("");
+
+  const toggleDrawer = (type) => {
+    setDrawerOpen(!drawerOpen);
+    setDrawerType(type);
+  };
+
+  const iconButtonStyle = {
+    color: "gray",
+    "&:hover": { color: "#1976d2" },
+    transition: "color 0.3s",
+  };
 
   const handleSearchChange = (event) => {
     const value = event.target.value || "";
-    setGlobalFilter(value);
-    setFilter(value);
+    setSearch(value);
   };
 
   return (
@@ -22,24 +37,23 @@ const Navbar = () => {
         display: "flex",
         justifyContent: "end",
         alignItems: "center",
-        gap: "15px", // Increased gap for cleaner spacing
-        margin: "15px 20px", // Added margin for spacing from edges
+        gap: "15px",
+        margin: "10px",
       }}
     >
-      {/* Search Field */}
       <TextField
         variant="outlined"
         placeholder="Search"
-        value={globalFilter || ""}
+        value={search || ""}
         onChange={handleSearchChange}
         sx={{
-          width: "240px", // Adjusted width for better appearance
+          width: "240px",
           "& .MuiOutlinedInput-root": {
-            borderRadius: "25px", // Rounded search bar for modern look
+            borderRadius: "25px",
             paddingRight: 1,
           },
           "& .MuiOutlinedInput-input": {
-            padding: "8px 14px", // Compact padding inside the input
+            padding: "8px 14px",
           },
         }}
         InputProps={{
@@ -53,43 +67,41 @@ const Navbar = () => {
 
       {/* Icons */}
       <div>
-        <IconButton
-          sx={{
-            color: "gray",
-            "&:hover": { color: "#1976d2" }, // Hover effect for icons
-            transition: "color 0.3s",
-          }}
-        >
+        <IconButton onClick={() => toggleDrawer("showhidecolumndrawer")} sx={iconButtonStyle}>
           <VisibilityIcon />
         </IconButton>
-        <IconButton
-          sx={{
-            color: "gray",
-            "&:hover": { color: "#1976d2" },
-            transition: "color 0.3s",
-          }}
-        >
+        <IconButton onClick={() => toggleDrawer("sortingdrawer")} sx={iconButtonStyle}>
           <SwapVertIcon />
         </IconButton>
-        <IconButton
-          sx={{
-            color: "gray",
-            "&:hover": { color: "#1976d2" },
-            transition: "color 0.3s",
-          }}
-        >
+        <IconButton onClick={() => toggleDrawer("filteringdrawer")} sx={iconButtonStyle}>
           <FilterListIcon />
         </IconButton>
-        <IconButton
-          sx={{
-            color: "gray",
-            "&:hover": { color: "#1976d2" },
-            transition: "color 0.3s",
-          }}
-        >
+        <IconButton onClick={() => toggleDrawer("groupingdrawer")} sx={iconButtonStyle}>
           <LayersIcon />
         </IconButton>
       </div>
+
+      {/* Drawer */}
+      {drawerOpen && drawerType === "showhidecolumndrawer" &&
+        (
+          <ShowHideColumnDrawer open={drawerOpen} toggleDrawer={toggleDrawer} />
+        )
+      }
+      {drawerOpen && drawerType === "sortingdrawer" &&
+        (
+          <SortingDrawer open={drawerOpen} toggleDrawer={toggleDrawer} />
+        )
+      }
+      {drawerOpen && drawerType === "filteringdrawer" &&
+        (
+          <FilteringDrawer open={drawerOpen} toggleDrawer={toggleDrawer} />
+        )
+      }
+      {drawerOpen && drawerType === "groupingdrawer" &&
+        (
+          <GroupingDrawer open={drawerOpen} toggleDrawer={toggleDrawer} />
+        )
+      }
     </div>
   );
 };

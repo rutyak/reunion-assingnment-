@@ -6,9 +6,7 @@ function App() {
   return (
     <div className="App">
       <Navbar />
-      <div style={{ padding: "20px" }}>
-        <CustomeTable />
-      </div>
+      <CustomeTable />
     </div>
   );
 }
