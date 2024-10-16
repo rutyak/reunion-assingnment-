@@ -10,7 +10,14 @@ import SortingDrawer from "./drawers/SortingDrawer";
 import FilteringDrawer from "./drawers/FilteringDrawer";
 import GroupingDrawer from "./drawers/GroupingDrawer";
 
-const Navbar = ({ setSearch, search }) => {
+const Navbar = ({
+  setSearch,
+  search,
+  setSelectedColumns,
+  selectedColumns,
+  setShowFilteredColumn,
+  showFilteredColumn,
+}) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerType, setDrawerType] = useState("");
 
@@ -66,41 +73,52 @@ const Navbar = ({ setSearch, search }) => {
 
       {/* Icons */}
       <div>
-        <IconButton onClick={() => toggleDrawer("showhidecolumndrawer")} sx={iconButtonStyle}>
+        <IconButton
+          onClick={() => toggleDrawer("showhidecolumndrawer")}
+          sx={iconButtonStyle}
+        >
           <VisibilityIcon />
         </IconButton>
-        <IconButton onClick={() => toggleDrawer("sortingdrawer")} sx={iconButtonStyle}>
+        <IconButton
+          onClick={() => toggleDrawer("sortingdrawer")}
+          sx={iconButtonStyle}
+        >
           <SwapVertIcon />
         </IconButton>
-        <IconButton onClick={() => toggleDrawer("filteringdrawer")} sx={iconButtonStyle}>
+        <IconButton
+          onClick={() => toggleDrawer("filteringdrawer")}
+          sx={iconButtonStyle}
+        >
           <FilterListIcon />
         </IconButton>
-        <IconButton onClick={() => toggleDrawer("groupingdrawer")} sx={iconButtonStyle}>
+        <IconButton
+          onClick={() => toggleDrawer("groupingdrawer")}
+          sx={iconButtonStyle}
+        >
           <LayersIcon />
         </IconButton>
       </div>
 
       {/* Drawer */}
-      {drawerOpen && drawerType === "showhidecolumndrawer" &&
-        (
-          <ShowHideColumnDrawer open={drawerOpen} toggleDrawer={toggleDrawer} />
-        )
-      }
-      {drawerOpen && drawerType === "sortingdrawer" &&
-        (
-          <SortingDrawer open={drawerOpen} toggleDrawer={toggleDrawer} />
-        )
-      }
-      {drawerOpen && drawerType === "filteringdrawer" &&
-        (
-          <FilteringDrawer open={drawerOpen} toggleDrawer={toggleDrawer} />
-        )
-      }
-      {drawerOpen && drawerType === "groupingdrawer" &&
-        (
-          <GroupingDrawer open={drawerOpen} toggleDrawer={toggleDrawer} />
-        )
-      }
+      {drawerOpen && drawerType === "showhidecolumndrawer" && (
+        <ShowHideColumnDrawer
+          open={drawerOpen}
+          toggleDrawer={toggleDrawer}
+          setSelectedColumns={setSelectedColumns}
+          selectedColumns={selectedColumns}
+          setShowFilteredColumn={setShowFilteredColumn}
+          showFilteredColumn={showFilteredColumn}
+        />
+      )}
+      {drawerOpen && drawerType === "sortingdrawer" && (
+        <SortingDrawer open={drawerOpen} toggleDrawer={toggleDrawer} />
+      )}
+      {drawerOpen && drawerType === "filteringdrawer" && (
+        <FilteringDrawer open={drawerOpen} toggleDrawer={toggleDrawer} />
+      )}
+      {drawerOpen && drawerType === "groupingdrawer" && (
+        <GroupingDrawer open={drawerOpen} toggleDrawer={toggleDrawer} />
+      )}
     </div>
   );
 };

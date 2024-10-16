@@ -18,25 +18,30 @@ const columns = [
   { id: "createdAt", label: "Created At" },
   { id: "updatedAt", label: "Updated At" },
   { id: "price", label: "Price" },
-  { id: "salePrice", label: "Sale Price" },
+  { id: "sale_price", label: "Sale Price" },
 ];
 
-const ShowHideColumnDrawer = ({ open, toggleDrawer }) => {
-  const [selectedColumns, setSelectedColumns] = useState(
-    columns.reduce((acc, column) => ({ ...acc, [column.id]: true }), {})
-  );
-
+const ShowHideColumnDrawer = ({
+  open,
+  toggleDrawer,
+  setSelectedColumns,
+  selectedColumns,
+  setShowFilteredColumn,
+  showFilteredColumn,
+}) => {
   const handleToggle = (id) => {
     setSelectedColumns((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
+    setShowFilteredColumn(false);
   };
 
   const showAllColumns = () => {
     setSelectedColumns(
       columns.reduce((acc, column) => ({ ...acc, [column.id]: true }), {})
     );
+    setShowFilteredColumn(false);
   };
 
   return (
@@ -71,6 +76,7 @@ const ShowHideColumnDrawer = ({ open, toggleDrawer }) => {
             }}
           >
             <Typography>{column.label}</Typography>
+            {console.log("selectedColumns: ", selectedColumns)}
             <Switch
               checked={selectedColumns[column.id]}
               onChange={() => handleToggle(column.id)}
@@ -84,12 +90,17 @@ const ShowHideColumnDrawer = ({ open, toggleDrawer }) => {
           variant="outlined"
           fullWidth
           onClick={showAllColumns}
-          sx={{ marginBottom: 2,height:"50px" }}
+          sx={{ marginBottom: 2, height: "50px" }}
         >
           Show all columns
         </Button>
 
-        <Button variant="contained"  sx={{ height:"50px"}} fullWidth>
+        <Button
+          variant="contained"
+          sx={{ height: "50px" }}
+          fullWidth
+          onClick={() => setShowFilteredColumn(true)}
+        >
           Apply
         </Button>
       </Box>

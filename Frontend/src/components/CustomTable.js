@@ -36,7 +36,7 @@ const columns = [
   {
     accessorKey: "sale_price",
     header: "Sale Price",
-    cell: ({ row }) => row.original.sale_price ?? "N/A", 
+    cell: ({ row }) => row.original.sale_price ?? "N/A",
   },
 ];
 
@@ -44,7 +44,7 @@ const StyledSwapVertIcon = styled(SwapVertIcon)(({ active }) => ({
   color: active ? "#1976d2" : "gray",
 }));
 
-const CustomTable = ({ search }) => {
+const CustomTable = ({ search, selectedColumns, showFilteredColumn }) => {
   const [sorting, setSorting] = useState([]);
   const [fetchedData, setFetchedData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -52,9 +52,14 @@ const CustomTable = ({ search }) => {
   const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(false);
 
+  const filteredColumn = columns.filter(
+    (column) => selectedColumns[column.accessorKey]
+  );
+  console.log("filtered column:", filteredColumn);
+
   const table = useReactTable({
     data: fetchedData,
-    columns,
+    columns: showFilteredColumn ? filteredColumn : columns,
     state: { search, sorting },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -91,7 +96,15 @@ const CustomTable = ({ search }) => {
   return (
     <Box sx={{ paddingLeft: "10px", paddingRight: "10px", paddingTop: "10px" }}>
       <TableContainer component={Paper}>
-        <Table stickyHeader aria-label="sortable table">
+        <Table
+          stickyHeader
+          aria-label="sortable table"
+          sx={{
+            Width: "99%",
+            minWidth: "auto",
+            margin: "0 auto",
+          }}
+        >
           <TableHead>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup?.id}>
