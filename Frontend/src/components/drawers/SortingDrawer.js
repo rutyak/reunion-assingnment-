@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Box,
   Drawer,
   Typography,
-  Switch,
   Button,
   Divider,
   IconButton,
@@ -22,23 +21,23 @@ const columns = [
   { id: "salePrice", label: "Sale Price" },
 ];
 
-const SortingDrawer = ({ open, toggleDrawer }) => {
-  const [selectedColumns, setSelectedColumns] = useState(
-    columns.reduce((acc, column) => ({ ...acc, [column.id]: true }), {})
-  );
+const SortingDrawer = ({ open, toggleDrawer, setSorting, sorting }) => {
+  // const [selectedColumns, setSelectedColumns] = useState(
+  //   columns.reduce((acc, column) => ({ ...acc, [column.id]: true }), {})
+  // );
 
-  const handleToggle = (id) => {
-    setSelectedColumns((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
+  // const handleToggle = (id) => {
+  //   setSelectedColumns((prev) => ({
+  //     ...prev,
+  //     [id]: !prev[id],
+  //   }));
+  // };
 
-  const showAllColumns = () => {
-    setSelectedColumns(
-      columns.reduce((acc, column) => ({ ...acc, [column.id]: true }), {})
-    );
-  };
+  // const showAllColumns = () => {
+  //   setSelectedColumns(
+  //     columns.reduce((acc, column) => ({ ...acc, [column.id]: true }), {})
+  //   );
+  // };
 
   return (
     <Drawer anchor="right" open={open} onClose={toggleDrawer}>
@@ -71,7 +70,7 @@ const SortingDrawer = ({ open, toggleDrawer }) => {
             }}
           >
             <Typography>{column.label}</Typography>
-            <SwapVertIcon sx={{color:"lightgray", pl:1}}/>
+            <SwapVertIcon sx={{ color: "lightgray", pl: 1 }} />
           </Box>
         ))}
 
@@ -80,8 +79,8 @@ const SortingDrawer = ({ open, toggleDrawer }) => {
         <Button
           variant="outlined"
           fullWidth
-          onClick={showAllColumns}
-          sx={{ marginBottom: 2,height:"50px" }}
+          // onClick={showAllColumns}
+          sx={{ marginBottom: 2, height: "50px" }}
         >
           Clear Sort
         </Button>
